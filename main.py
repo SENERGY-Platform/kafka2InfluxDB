@@ -55,7 +55,7 @@ def get_field_values(field_conf, data_in):
         if type(val) == key_type:
             fields[key] = val
         else:
-            if key_type == "str":
+            if key_type == "string":
                 fields[key] = str(val)
             elif key_type == "float":
                 fields[key] = float(val)
