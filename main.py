@@ -48,19 +48,29 @@ field_config = json.loads(DATA_FIELDS_MAPPING)
 def get_field_values(field_conf, data_in):
     fields = {}
     for (key, value) in field_conf.items():
-        key_conf = key.split(":")
-        key = key_conf[0]
-        key_type = key_conf[1]
-        val = Tree(data_in).execute('$.'+value)
-        if type(val) == key_type:
-            fields[key] = val
-        else:
+        try:
+            key_conf = key.split(":")
+            key = key_conf[0]
+            key_type = key_conf[1]
+            val = Tree(data_in).execute('$.'+value)
+            if type(val) == key_type:
+                fields[key] = val
+            else:
+                if key_type == "string":
+                    fields[key] = str(val)
+                elif key_type == "float":
+                    fields[key] = float(val)
+                elif key_type == "int":
+                    fields[key] = int(val)
+        except Exception as e:
+            print('Could not parse value for key ' + key)
+            print(e)
             if key_type == "string":
-                fields[key] = str(val)
+                fields[key] = ''
             elif key_type == "float":
-                fields[key] = float(val)
+                fields[key] = 0.0
             elif key_type == "int":
-                fields[key] = int(val)
+                fields[key] = 0
     return fields
 
 
