@@ -87,7 +87,8 @@ c = Consumer({
     'group.id': KAFKA_GROUP_ID,
     'default.topic.config': {
         'auto.offset.reset': 'smallest'
-    }})
+    },
+    'max.poll.interval.ms': 600000})
 
 #c.assign(TopicPartition('0', 0))
 
