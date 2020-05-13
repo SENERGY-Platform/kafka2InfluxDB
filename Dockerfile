@@ -6,7 +6,7 @@ RUN apt-get update \
     && cd librdkafka \
     && ./configure --prefix=/usr \
     && make \
-    && make install \
+    && make install
     #&& cd ..
     #&& rm -rf librdkafka \
     #&& apt-get purge -y git \
