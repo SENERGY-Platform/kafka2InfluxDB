@@ -1,0 +1,21 @@
+{
+  "analytics": {
+    "timestamp": "2020-06-04T11:17:37.000Z",
+    "isOn": false
+  },
+  "operator_id": "dc8ce01a-3717-4777-b10a-1c9ebe700d60",
+  "inputs": [
+    {
+      "device_id": "urn:infai:ses:device:92c5e2a1-cd63-4851-a7fd-028f30824df6",
+      "service_id": "urn:infai:ses:service:989a999f-c693-40c6-a9bb-4a63ff7f9ad9",
+      "value": {
+        "power": {
+          "level": 0.7,
+          "updateTime": "2020-06-04T11:17:37.000Z"
+        }
+      }
+    }
+  ],
+  "pipeline_id": "9540b42b-222c-40d7-b5a6-a7a8281cf1ab",
+  "time": "2020-06-04T12:06:08.849597Z"
+}
