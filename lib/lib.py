@@ -35,6 +35,8 @@ def get_field_values(field_conf, data_in):
                     fields[key] = float(val)
                 elif key_type == "int":
                     fields[key] = int(val)
+                elif key_type == "bool":
+                    fields[key] = bool(val)
         except Exception as e:
             print('Could not parse value for key ' + key)
             print(e)
@@ -44,6 +46,8 @@ def get_field_values(field_conf, data_in):
                 fields[key] = 0.0
             elif key_type == "int":
                 fields[key] = 0
+            elif key_type == "bool":
+                fields[key] = False
     return fields
 
 
@@ -68,5 +72,3 @@ def start(client, c,DATA_FILTER_ID_MAPPING, DATA_FILTER_ID, DATA_MEASUREMENT, DA
         elif msg.error().code() != KafkaError.PARTITION_EOF:
             print(msg.error())
             running = False
-
-
