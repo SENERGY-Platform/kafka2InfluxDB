@@ -53,6 +53,7 @@ def get_field_values(field_conf, data_in):
 
 def start(client, c,DATA_FILTER_ID_MAPPING, DATA_FILTER_ID, DATA_MEASUREMENT, DATA_TIME_MAPPING, field_config):
     running = True
+    try_time = True
     while running:
         msg = c.poll()
         if not msg.error():
@@ -61,9 +62,15 @@ def start(client, c,DATA_FILTER_ID_MAPPING, DATA_FILTER_ID, DATA_MEASUREMENT, DA
             if Tree(data_input).execute('$.' + DATA_FILTER_ID_MAPPING) == DATA_FILTER_ID:
                 body = {
                     "measurement": DATA_MEASUREMENT,
-                    "time": Tree(data_input).execute('$.' + DATA_TIME_MAPPING),
                     "fields": get_field_values(field_config, data_input)
                 }
+                if try_time:
+                    try:
+                        body["time"] = Tree(data_input).execute('$.' + DATA_TIME_MAPPING)
+                    except SyntaxError as err:
+                        print('Disabling reading time from message, error occurred:', err.msg)
+                        print('Influx will set time to time of arrival by default')
+                        try_time = False
                 print(body)
                 try:
                     client.write_points([body])
