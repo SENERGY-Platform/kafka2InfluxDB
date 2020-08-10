@@ -11,11 +11,14 @@
 #  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
+import os
 
 from objectpath import *
 import json
 from influxdb import exceptions
 from confluent_kafka import KafkaError
+
+DEBUG = os.getenv('DEBUG', "false")
 
 
 def get_field_values(field_conf, data_in):
@@ -63,7 +66,8 @@ def start(client, c,DATA_FILTER_ID_MAPPING, DATA_FILTER_ID, DATA_MEASUREMENT, DA
     while running:
         msg = c.poll()
         if not msg.error():
-            print('Received message: %s' % msg.value().decode('utf-8'))
+            if DEBUG:
+                print('Received message: %s' % msg.value().decode('utf-8'))
             data_input = json.loads(msg.value().decode('utf-8'))
             if filter_msg(data_input, DATA_FILTER_ID_MAPPING, DATA_FILTER_ID):
                 body = {
