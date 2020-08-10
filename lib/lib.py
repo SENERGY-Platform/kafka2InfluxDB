@@ -51,6 +51,12 @@ def get_field_values(field_conf, data_in):
     return fields
 
 
+def filter_msg(data_input, DATA_FILTER_ID_MAPPING, DATA_FILTER_ID):
+    if Tree(data_input).execute('$.' + DATA_FILTER_ID_MAPPING) == DATA_FILTER_ID:
+        return True
+    return False
+
+
 def start(client, c,DATA_FILTER_ID_MAPPING, DATA_FILTER_ID, DATA_MEASUREMENT, DATA_TIME_MAPPING, field_config):
     running = True
     try_time = True
@@ -59,7 +65,7 @@ def start(client, c,DATA_FILTER_ID_MAPPING, DATA_FILTER_ID, DATA_MEASUREMENT, DA
         if not msg.error():
             print('Received message: %s' % msg.value().decode('utf-8'))
             data_input = json.loads(msg.value().decode('utf-8'))
-            if Tree(data_input).execute('$.' + DATA_FILTER_ID_MAPPING) == DATA_FILTER_ID:
+            if filter_msg(data_input, DATA_FILTER_ID_MAPPING, DATA_FILTER_ID):
                 body = {
                     "measurement": DATA_MEASUREMENT,
                     "fields": get_field_values(field_config, data_input)
