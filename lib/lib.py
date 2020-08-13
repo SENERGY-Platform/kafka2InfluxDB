@@ -55,8 +55,13 @@ def get_field_values(field_conf, data_in):
 
 
 def filter_msg(data_input, DATA_FILTER_ID_MAPPING, DATA_FILTER_ID):
-    if Tree(data_input).execute('$.' + DATA_FILTER_ID_MAPPING) == DATA_FILTER_ID:
-        return True
+    if DATA_FILTER_ID_MAPPING == 'device_id':
+        if Tree(data_input).execute('$.' + DATA_FILTER_ID_MAPPING) == DATA_FILTER_ID:
+            return True
+    elif DATA_FILTER_ID_MAPPING == 'operator_id':
+        pipe_filter = DATA_FILTER_ID.split(':')
+        if (Tree(data_input).execute('$.pipeline_id') == pipe_filter[0]) & (Tree(data_input).execute('$.operator_id') == pipe_filter[1]):
+            return True
     return False
 
 
