@@ -13,6 +13,7 @@
 #  limitations under the License.
 import os
 
+from influxdb.client import InfluxDBClient
 from objectpath import *
 import json
 from influxdb import exceptions
@@ -65,7 +66,7 @@ def filter_msg(data_input, DATA_FILTER_ID_MAPPING, DATA_FILTER_ID):
     return False
 
 
-def start(client, c,DATA_FILTER_ID_MAPPING, DATA_FILTER_ID, DATA_MEASUREMENT, DATA_TIME_MAPPING, field_config):
+def start(client: InfluxDBClient, c,DATA_FILTER_ID_MAPPING, DATA_FILTER_ID, DATA_MEASUREMENT, DATA_TIME_MAPPING, field_config, TIME_PRECISION = None):
     running = True
     try_time = True
     while running:
@@ -88,7 +89,7 @@ def start(client, c,DATA_FILTER_ID_MAPPING, DATA_FILTER_ID, DATA_MEASUREMENT, DA
                         try_time = False
                 print(body)
                 try:
-                    client.write_points([body])
+                    client.write_points([body], time_precision=TIME_PRECISION)
                 except exceptions.InfluxDBClientError as e:
                     print(e.content)
         elif msg.error().code() != KafkaError.PARTITION_EOF:

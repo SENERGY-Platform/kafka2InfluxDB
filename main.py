@@ -43,6 +43,10 @@ DATA_FILTER_ID = os.getenv('DATA_FILTER_ID', "device_id")
 
 DATA_FIELDS_MAPPING = os.getenv('DATA_FIELDS_MAPPING', '{"value:float": "value"}')
 
+TIME_PRECISION = os.getenv('TIME_PRECISION', None)
+if TIME_PRECISION == "":
+    TIME_PRECISION = None
+
 field_config = json.loads(DATA_FIELDS_MAPPING)
 
 client = InfluxDBClient(INFLUX_HOST,
@@ -65,6 +69,6 @@ c = Consumer({
 
 c.subscribe([KAFKA_TOPIC])
 
-lib.start(client, c, DATA_FILTER_ID_MAPPING, DATA_FILTER_ID, DATA_MEASUREMENT, DATA_TIME_MAPPING, field_config)
+lib.start(client, c, DATA_FILTER_ID_MAPPING, DATA_FILTER_ID, DATA_MEASUREMENT, DATA_TIME_MAPPING, field_config, TIME_PRECISION)
 
 c.close()
