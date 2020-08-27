@@ -72,7 +72,7 @@ def start(client: InfluxDBClient, c,DATA_FILTER_ID_MAPPING, DATA_FILTER_ID, DATA
     while running:
         msg = c.poll()
         if not msg.error():
-            if DEBUG:
+            if DEBUG == "true":
                 print('Received message: %s' % msg.value().decode('utf-8'))
             data_input = json.loads(msg.value().decode('utf-8'))
             if filter_msg(data_input, DATA_FILTER_ID_MAPPING, DATA_FILTER_ID):
@@ -87,7 +87,8 @@ def start(client: InfluxDBClient, c,DATA_FILTER_ID_MAPPING, DATA_FILTER_ID, DATA
                         print('Disabling reading time from message, error occurred:', err.msg)
                         print('Influx will set time to time of arrival by default')
                         try_time = False
-                print(body)
+                if DEBUG == "true":
+                    print('Write message: %s' % body)
                 try:
                     client.write_points([body], time_precision=TIME_PRECISION)
                 except exceptions.InfluxDBClientError as e:
