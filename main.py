@@ -69,6 +69,8 @@ c = Consumer({
 
 c.subscribe([KAFKA_TOPIC])
 
+print("starting export")
 lib.start(client, c, DATA_FILTER_ID_MAPPING, DATA_FILTER_ID, DATA_MEASUREMENT, DATA_TIME_MAPPING, field_config, TIME_PRECISION)
+
 
 c.close()
