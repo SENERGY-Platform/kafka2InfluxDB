@@ -65,8 +65,6 @@ consumer = Consumer({
     },
     'max.poll.interval.ms': 600000})
 
-print("starting export")
-
 kafka_2_influx = lib.Kafka2Influx(consumer, KAFKA_TOPIC, influx_client, DATA_FILTER_ID_MAPPING, DATA_FILTER_ID,
                                   DATA_MEASUREMENT, DATA_TIME_MAPPING, field_config, TIME_PRECISION)
 kafka_2_influx.start()
