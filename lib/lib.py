@@ -47,7 +47,7 @@ class Kafka2Influx:
         self.influx_client = influx_client
 
     def start(self):
-        print("starting export")
+        sys.stdout.write("starting export")
         running = True
         try:
             self.consumer.subscribe([self.topic])
