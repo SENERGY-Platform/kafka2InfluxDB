@@ -22,10 +22,17 @@ class TestMainMethods(unittest.TestCase):
 
     def test_get_fields_values(self):
         field_conf = json.loads('{ "isOn:bool": "analytics.isOn", "timestamp:string": "analytics.timestamp"}')
-        with open('test/data/test.json') as json_file:
+        with open('./data/test.json') as json_file:
             data_in = json.load(json_file)
-        print(json.dumps(lib.get_field_values(field_conf, data_in)))
+        kafka_2_influx = lib.Kafka2Influx(consumer=None,
+                                          topic=None,
+                                          influx_client=None,
+                                          data_filter_id_mapping=None,
+                                          data_filter_id=None,
+                                          data_measurement=None,
+                                          data_time_mapping=None,
+                                          field_config=field_conf,
+                                          time_precision=None)
+        print(json.dumps(kafka_2_influx.get_field_values(data_in)))
         self.assertEqual('{"isOn": false, "timestamp": "2020-06-04T11:17:37.000Z"}'
-                         , json.dumps(lib.get_field_values(field_conf, data_in)))
-
-
+                         , json.dumps(kafka_2_influx.get_field_values(data_in)))

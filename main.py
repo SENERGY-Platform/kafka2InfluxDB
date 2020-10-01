@@ -13,16 +13,16 @@
 #  limitations under the License.
 
 import json
-
-import lib
-
 import os
 
 from confluent_kafka import Consumer
 from influxdb import InfluxDBClient
 
+import lib
+
 if os.path.isfile('./.env'):
     from dotenv import load_dotenv
+
     dotenv_path = os.path.join(os.path.dirname(__file__), '.env')
     load_dotenv(dotenv_path)
 
@@ -49,15 +49,15 @@ if TIME_PRECISION == "":
 
 field_config = json.loads(DATA_FIELDS_MAPPING)
 
-client = InfluxDBClient(INFLUX_HOST,
-                        INFLUX_PORT,
-                        INFLUX_USER,
-                        INFLUX_PW,
-                        INFLUX_DB)
+influx_client = InfluxDBClient(INFLUX_HOST,
+                               INFLUX_PORT,
+                               INFLUX_USER,
+                               INFLUX_PW,
+                               INFLUX_DB)
 
-client.create_database(INFLUX_DB)
+influx_client.create_database(INFLUX_DB)
 
-c = Consumer({
+consumer = Consumer({
     'bootstrap.servers': KAFKA_BOOTSTRAP,
     'group.id': KAFKA_GROUP_ID,
     'default.topic.config': {
@@ -65,12 +65,8 @@ c = Consumer({
     },
     'max.poll.interval.ms': 600000})
 
-# c.assign(TopicPartition('0', 0))
-
-c.subscribe([KAFKA_TOPIC])
-
 print("starting export")
-lib.start(client, c, DATA_FILTER_ID_MAPPING, DATA_FILTER_ID, DATA_MEASUREMENT, DATA_TIME_MAPPING, field_config, TIME_PRECISION)
 
-
-c.close()
+kafka_2_influx = lib.Kafka2Influx(consumer, KAFKA_TOPIC, influx_client, DATA_FILTER_ID_MAPPING, DATA_FILTER_ID,
+                                  DATA_MEASUREMENT, DATA_TIME_MAPPING, DATA_FIELDS_MAPPING, TIME_PRECISION)
+kafka_2_influx.start()
