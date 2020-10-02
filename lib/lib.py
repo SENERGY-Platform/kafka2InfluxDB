@@ -65,7 +65,8 @@ class Kafka2Influx:
                     running = False
                 else:
                     self.process_msg(msg)
-
+        except KafkaException as e:
+            print(e)
         finally:
             self.consumer.close()
 
