@@ -47,7 +47,7 @@ class Kafka2Influx:
         self.influx_client = influx_client
 
     def start(self):
-        sys.stdout.write("starting export")
+        print("starting export", flush=True)
         running = True
         try:
             self.consumer.subscribe([self.topic])
@@ -71,7 +71,7 @@ class Kafka2Influx:
 
     def process_msg(self, msg):
         if DEBUG == "true":
-            print('Received message: %s' % msg.value().decode('utf-8'))
+            print('Received message: %s' % msg.value().decode('utf-8'), flush=True)
         data_input = json.loads(msg.value().decode('utf-8'))
         if self.filter_msg(data_input):
             body = {
@@ -82,11 +82,11 @@ class Kafka2Influx:
                 try:
                     body["time"] = Tree(data_input).execute('$.' + self.data_time_mapping)
                 except SyntaxError as err:
-                    print('Disabling reading time from message, error occurred:', err.msg)
-                    print('Influx will set time to time of arrival by default')
+                    print('Disabling reading time from message, error occurred:', err.msg, flush=True)
+                    print('Influx will set time to time of arrival by default', flush=True)
                     self.try_time = False
             if DEBUG == "true":
-                print('Write message: %s' % body)
+                print('Write message: %s' % body, flush=True)
             try:
                 self.influx_client.write_points([body], time_precision=self.time_precision)
             except exceptions.InfluxDBClientError as e:
