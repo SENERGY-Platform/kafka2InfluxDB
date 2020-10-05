@@ -14,11 +14,13 @@
 
 import json
 import os
+import sys
 
 from confluent_kafka import Consumer
 from influxdb import InfluxDBClient
+from influxdb.exceptions import InfluxDBClientError
 
-import lib
+from lib import Kafka2Influx
 
 if os.path.isfile('./.env'):
     from dotenv import load_dotenv
@@ -49,22 +51,37 @@ if TIME_PRECISION == "":
 
 field_config = json.loads(DATA_FIELDS_MAPPING)
 
-influx_client = InfluxDBClient(INFLUX_HOST,
-                               INFLUX_PORT,
-                               INFLUX_USER,
-                               INFLUX_PW,
-                               INFLUX_DB)
+try:
+    influx_client = InfluxDBClient(INFLUX_HOST,
+                                   INFLUX_PORT,
+                                   INFLUX_USER,
+                                   INFLUX_PW,
+                                   INFLUX_DB)
+except Exception as e:
+    print("Could not connect to Influx DB")
+    sys.exit(1)
+try:
+    influx_client.create_database(INFLUX_DB)
+except Exception as e:
+    print("Could not create DB")
+    sys.exit(1)
 
-influx_client.create_database(INFLUX_DB)
 
 consumer = Consumer({
     'bootstrap.servers': KAFKA_BOOTSTRAP,
     'group.id': KAFKA_GROUP_ID,
+    'socket.timeout.ms': 2000,
+    'socket.max.fails': 2,
+    'metadata.request.timeout.ms': 5000,
+    'reconnect.backoff.max.ms': 5000,
+    'api.version.request.timeout.ms': 5000,
+    'coordinator.query.interval.ms': 1000,
     'default.topic.config': {
         'auto.offset.reset': os.getenv('OFFSET_RESET', 'smallest')
     },
-    'max.poll.interval.ms': 600000})
+    'max.poll.interval.ms': 600000
+    })
 
-kafka_2_influx = lib.Kafka2Influx(consumer, KAFKA_TOPIC, influx_client, DATA_FILTER_ID_MAPPING, DATA_FILTER_ID,
+kafka_2_influx = Kafka2Influx(consumer, KAFKA_TOPIC, influx_client, DATA_FILTER_ID_MAPPING, DATA_FILTER_ID,
                                   DATA_MEASUREMENT, DATA_TIME_MAPPING, field_config, TIME_PRECISION)
 kafka_2_influx.start()

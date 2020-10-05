@@ -20,7 +20,10 @@ import json
 from influxdb import exceptions
 from confluent_kafka import KafkaError
 
-DEBUG = os.getenv('DEBUG', "false")
+# Example using confuent_kafka
+from confluent_kafka.admin import AdminClient
+
+DEBUG = os.getenv('DEBUG', "true")
 
 
 class Kafka2Influx:
@@ -46,13 +49,14 @@ class Kafka2Influx:
         self.time_precision = time_precision
         self.influx_client = influx_client
 
+
     def start(self):
         print("starting export", flush=True)
         running = True
         try:
             self.consumer.subscribe([self.topic])
             while running:
-                msg = self.consumer.poll(timeout=1.0)
+                msg = self.consumer.poll(timeout=0.0)
                 if msg is None:
                     continue
                 if msg.error():
@@ -65,8 +69,9 @@ class Kafka2Influx:
                     running = False
                 else:
                     self.process_msg(msg)
-        except KafkaException as e:
+        except Exception as e:
             print(e)
+            sys.exit()
         finally:
             self.consumer.close()
 

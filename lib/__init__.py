@@ -12,6 +12,6 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-__all__ = ["start", "get_field_values"]
+__all__ = ["Kafka2Influx"]
 
 from lib.lib import *
