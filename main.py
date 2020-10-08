@@ -70,12 +70,12 @@ except Exception as e:
 consumer = Consumer({
     'bootstrap.servers': KAFKA_BOOTSTRAP,
     'group.id': KAFKA_GROUP_ID,
-    'socket.timeout.ms': 2000,
-    'socket.max.fails': 2,
-    'metadata.request.timeout.ms': 5000,
-    'reconnect.backoff.max.ms': 5000,
-    'api.version.request.timeout.ms': 5000,
-    'coordinator.query.interval.ms': 1000,
+    #'socket.timeout.ms': 2000,
+    #'socket.max.fails': 2,
+    #'metadata.request.timeout.ms': 5000,
+    #'reconnect.backoff.max.ms': 5000,
+    #'api.version.request.timeout.ms': 5000,
+    #'coordinator.query.interval.ms': 1000,
     'default.topic.config': {
         'auto.offset.reset': os.getenv('OFFSET_RESET', 'smallest')
     },
