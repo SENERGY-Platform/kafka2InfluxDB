@@ -18,7 +18,6 @@ import sys
 
 from confluent_kafka import Consumer
 from influxdb import InfluxDBClient
-from influxdb.exceptions import InfluxDBClientError
 
 from lib import Kafka2Influx
 

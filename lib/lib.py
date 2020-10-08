@@ -20,9 +20,6 @@ import json
 from influxdb import exceptions
 from confluent_kafka import KafkaError
 
-# Example using confuent_kafka
-from confluent_kafka.admin import AdminClient
-
 DEBUG = os.getenv('DEBUG', "false")
 
 
@@ -48,7 +45,6 @@ class Kafka2Influx:
         self.field_config = field_config
         self.time_precision = time_precision
         self.influx_client = influx_client
-
 
     def start(self):
         print("starting export", flush=True)
