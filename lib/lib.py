@@ -23,7 +23,7 @@ from confluent_kafka import KafkaError
 # Example using confuent_kafka
 from confluent_kafka.admin import AdminClient
 
-DEBUG = os.getenv('DEBUG', "true")
+DEBUG = os.getenv('DEBUG', "false")
 
 
 class Kafka2Influx:
