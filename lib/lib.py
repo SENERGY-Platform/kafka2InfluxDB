@@ -52,7 +52,7 @@ class Kafka2Influx:
         try:
             self.consumer.subscribe([self.topic])
             while running:
-                msg = self.consumer.poll(timeout=0.0)
+                msg = self.consumer.poll(timeout=1.0)
                 if msg is None:
                     continue
                 if msg.error():
