@@ -127,7 +127,7 @@ class Kafka2Influx:
         return fields
 
     def filter_msg(self, data_input):
-        if self.data_filter_id_mapping == 'device_id':
+        if self.data_filter_id_mapping == 'device_id' or self.data_filter_id_mapping == 'import_id':
             if Tree(data_input).execute('$.' + self.data_filter_id_mapping) == self.data_filter_id:
                 return True
         elif self.data_filter_id_mapping == 'operator_id':
