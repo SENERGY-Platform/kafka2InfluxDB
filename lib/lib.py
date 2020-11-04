@@ -23,6 +23,39 @@ from confluent_kafka import KafkaError
 DEBUG = os.getenv('DEBUG', "false")
 
 
+def get_field_values(field_config, data_in):
+    fields = {}
+    for (key, value) in field_config.items():
+        try:
+            key_conf = key.split(":")
+            key = key_conf[0]
+            key_type = key_conf[1]
+            val = Tree(data_in).execute('$.' + value)
+            if type(val) == key_type:
+                fields[key] = val
+            else:
+                if key_type == "string":
+                    fields[key] = str(val)
+                elif key_type == "float":
+                    fields[key] = float(val)
+                elif key_type == "int":
+                    fields[key] = int(val)
+                elif key_type == "bool":
+                    fields[key] = bool(val)
+        except Exception as e:
+            print('Could not parse value for key ' + key)
+            print(e)
+            if key_type == "string":
+                fields[key] = ''
+            elif key_type == "float":
+                fields[key] = 0.0
+            elif key_type == "int":
+                fields[key] = 0
+            elif key_type == "bool":
+                fields[key] = False
+    return fields
+
+
 class Kafka2Influx:
 
     def __init__(self,
@@ -34,7 +67,8 @@ class Kafka2Influx:
                  data_measurement,
                  data_time_mapping,
                  field_config,
-                 time_precision=None):
+                 time_precision=None,
+                 tag_config={}):
         self.consumer = consumer
         self.topic = topic
         self.try_time = True
@@ -45,6 +79,7 @@ class Kafka2Influx:
         self.field_config = field_config
         self.time_precision = time_precision
         self.influx_client = influx_client
+        self.tag_config = tag_config
 
     def start(self):
         print("starting export", flush=True)
@@ -78,7 +113,7 @@ class Kafka2Influx:
         if self.filter_msg(data_input):
             body = {
                 "measurement": self.data_measurement,
-                "fields": self.get_field_values(data_input)
+                "fields": get_field_values(self.field_config, data_input)
             }
             if self.try_time:
                 try:
@@ -87,44 +122,14 @@ class Kafka2Influx:
                     print('Disabling reading time from message, error occurred:', err.msg, flush=True)
                     print('Influx will set time to time of arrival by default', flush=True)
                     self.try_time = False
+            if len(self.tag_config) > 0:
+                body["tags"] = get_field_values(self.tag_config, data_input)
             if DEBUG == "true":
                 print('Write message: %s' % body, flush=True)
             try:
                 self.influx_client.write_points([body], time_precision=self.time_precision)
             except exceptions.InfluxDBClientError as e:
                 print(e.content)
-
-    def get_field_values(self, data_in):
-        fields = {}
-        for (key, value) in self.field_config.items():
-            try:
-                key_conf = key.split(":")
-                key = key_conf[0]
-                key_type = key_conf[1]
-                val = Tree(data_in).execute('$.' + value)
-                if type(val) == key_type:
-                    fields[key] = val
-                else:
-                    if key_type == "string":
-                        fields[key] = str(val)
-                    elif key_type == "float":
-                        fields[key] = float(val)
-                    elif key_type == "int":
-                        fields[key] = int(val)
-                    elif key_type == "bool":
-                        fields[key] = bool(val)
-            except Exception as e:
-                print('Could not parse value for key ' + key)
-                print(e)
-                if key_type == "string":
-                    fields[key] = ''
-                elif key_type == "float":
-                    fields[key] = 0.0
-                elif key_type == "int":
-                    fields[key] = 0
-                elif key_type == "bool":
-                    fields[key] = False
-        return fields
 
     def filter_msg(self, data_input):
         if self.data_filter_id_mapping == 'device_id' or self.data_filter_id_mapping == 'import_id':

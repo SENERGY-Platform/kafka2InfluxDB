@@ -44,11 +44,15 @@ DATA_FILTER_ID = os.getenv('DATA_FILTER_ID', "device_id")
 
 DATA_FIELDS_MAPPING = os.getenv('DATA_FIELDS_MAPPING', '{"value:float": "value"}')
 
+DATA_TAGS_MAPPING = os.getenv('DATA_TAGS_MAPPING', '{}')
+
 TIME_PRECISION = os.getenv('TIME_PRECISION', None)
 if TIME_PRECISION == "":
     TIME_PRECISION = None
 
 field_config = json.loads(DATA_FIELDS_MAPPING)
+
+tag_config = json.loads(DATA_TAGS_MAPPING)
 
 try:
     influx_client = InfluxDBClient(INFLUX_HOST,
@@ -82,5 +86,5 @@ consumer = Consumer({
     })
 
 kafka_2_influx = Kafka2Influx(consumer, KAFKA_TOPIC, influx_client, DATA_FILTER_ID_MAPPING, DATA_FILTER_ID,
-                                  DATA_MEASUREMENT, DATA_TIME_MAPPING, field_config, TIME_PRECISION)
+                                  DATA_MEASUREMENT, DATA_TIME_MAPPING, field_config, TIME_PRECISION, tag_config)
 kafka_2_influx.start()
