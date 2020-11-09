@@ -1,4 +1,4 @@
-FROM python:3.7-slim as builder
+FROM python:3.7 as builder
 
 RUN apt-get update \
     && apt-get install -y git \
