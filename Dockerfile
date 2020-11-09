@@ -20,6 +20,6 @@ WORKDIR /app
 COPY --from=builder /usr/lib/librdkafka* /usr/lib/
 COPY --from=builder /opt/venv /opt/venv
 COPY --from=builder /app /app
-RUN apk update && apk add --no-cache libc6-compat
+RUN apk update && apk add --no-cache gcompat
 ENV PATH="/opt/venv/bin:$PATH"
 CMD [ "python", "./main.py" ]
