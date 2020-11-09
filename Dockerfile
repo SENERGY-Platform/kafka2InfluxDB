@@ -1,4 +1,4 @@
-FROM python:3.7
+FROM python:3.7-slim as builder
 
 RUN apt-get update \
     && apt-get install -y git \
@@ -7,20 +7,13 @@ RUN apt-get update \
     && ./configure --prefix=/usr \
     && make \
     && make install
-    #&& cd ..
-    #&& rm -rf librdkafka \
-    #&& apt-get purge -y git \
-    #&& apt-get clean -y \
-    #&& apt-get autoclean -y \
-    #&& apt-get autoremove -y \
-    #&& rm -rf /var/cache/debconf/*-old \
-    #&& rm -rf /var/lib/apt/lists/* \
-    #&& rm -rf /usr/share/doc/* \
-    #&& rm -rf /usr/local/manual/mod \
-    #&& rm -rf /usr/local/manual/programs \
-    #&& rm -rf /usr/share/vim/*/doc
 
-ADD . /opt/kafka-influxdb
-WORKDIR /opt/kafka-influxdb
+ADD . /app
+WORKDIR /app
 RUN pip install --no-cache-dir -r requirements.txt
+
+FROM python:3.7-alpine
+WORKDIR /app
+COPY --from=builder /usr/lib/librdkafka* /usr/lib/
+COPY --from=builder /app /app
 CMD [ "python", "./main.py" ]

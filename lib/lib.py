@@ -129,7 +129,7 @@ class Kafka2Influx:
             try:
                 self.influx_client.write_points([body], time_precision=self.time_precision)
             except exceptions.InfluxDBClientError as e:
-                print(e.content)
+                print('Received Influx error: %s', e.content, flush=True)
 
     def filter_msg(self, data_input):
         if self.data_filter_id_mapping == 'device_id' or self.data_filter_id_mapping == 'import_id':
