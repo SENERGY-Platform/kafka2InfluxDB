@@ -87,49 +87,54 @@ class Kafka2Influx:
         try:
             self.consumer.subscribe([self.topic])
             while running:
-                msg = self.consumer.poll(timeout=1.0)
-                if msg is None:
+                msgs = self.consumer.consume(num_messages=10000, timeout=1.0)
+                if msgs is None or len(msgs) == 0:
                     continue
-                if msg.error():
-                    if msg.error().code() == KafkaError._PARTITION_EOF:
-                        # End of partition event
-                        sys.stderr.write('%% %s [%d] reached end at offset %d\n' %
-                                         (msg.topic(), msg.partition(), msg.offset()))
-                    elif msg.error():
-                        raise KafkaException(msg.error())
-                    running = False
                 else:
-                    self.process_msg(msg)
+                    running = self.process_msgs(msgs)
         except Exception as e:
             print(e)
             sys.exit()
         finally:
             self.consumer.close()
 
-    def process_msg(self, msg):
-        if DEBUG == "true":
-            print('Received message: %s' % msg.value().decode('utf-8'), flush=True)
-        data_input = json.loads(msg.value().decode('utf-8'))
-        if self.filter_msg(data_input):
-            body = {
-                "measurement": self.data_measurement,
-                "fields": get_field_values(self.field_config, data_input)
-            }
-            if self.try_time:
-                try:
-                    body["time"] = Tree(data_input).execute('$.' + self.data_time_mapping)
-                except SyntaxError as err:
-                    print('Disabling reading time from message, error occurred:', err.msg, flush=True)
-                    print('Influx will set time to time of arrival by default', flush=True)
-                    self.try_time = False
-            if len(self.tag_config) > 0:
-                body["tags"] = get_field_values(self.tag_config, data_input)
+    def process_msgs(self, msgs) -> bool:
+        points = []
+        for msg in msgs:
+            if msg.error():
+                if msg.error().code() == KafkaError._PARTITION_EOF:
+                    # End of partition event
+                    sys.stderr.write('%% %s [%d] reached end at offset %d\n' %
+                                     (msg.topic(), msg.partition(), msg.offset()))
+                elif msg.error():
+                    raise KafkaException(msg.error())
+                return False
+
             if DEBUG == "true":
-                print('Write message: %s' % body, flush=True)
-            try:
-                self.influx_client.write_points([body], time_precision=self.time_precision)
-            except exceptions.InfluxDBClientError as e:
-                print('Received Influx error: %s', e.content, flush=True)
+                print('Received message: %s' % msg.value().decode('utf-8'), flush=True)
+            data_input = json.loads(msg.value().decode('utf-8'))
+            if self.filter_msg(data_input):
+                body = {
+                    "measurement": self.data_measurement,
+                    "fields": get_field_values(self.field_config, data_input)
+                }
+                if self.try_time:
+                    try:
+                        body["time"] = Tree(data_input).execute('$.' + self.data_time_mapping)
+                    except SyntaxError as err:
+                        print('Disabling reading time from message, error occurred:', err.msg, flush=True)
+                        print('Influx will set time to time of arrival by default', flush=True)
+                        self.try_time = False
+                if len(self.tag_config) > 0:
+                    body["tags"] = get_field_values(self.tag_config, data_input)
+                if DEBUG == "true":
+                    print('Write message: %s' % body, flush=True)
+                points.append(body)
+        try:
+            self.influx_client.write_points(points, time_precision=self.time_precision)
+        except exceptions.InfluxDBClientError as e:
+            print('Received Influx error: %s', e.content, flush=True)
+        return True
 
     def filter_msg(self, data_input):
         if self.data_filter_id_mapping == 'device_id' or self.data_filter_id_mapping == 'import_id':
