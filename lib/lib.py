@@ -23,6 +23,15 @@ from confluent_kafka import KafkaError
 DEBUG = os.getenv('DEBUG', "false")
 
 
+# quick fix for objectpath module recognizing "-" as operator in field names
+def get_value(data, path):
+    path = path.split(".")
+    value = data
+    for part in path:
+        value = value[part]
+    return value
+
+
 bool_true = {"True", "true", "1", 1}
 bool_false = {"False", "false", "0", 0}
 
@@ -54,7 +63,8 @@ def get_field_values(field_config, data_in):
             key_conf = key.split(":")
             key = key_conf[0]
             key_type = key_conf[1]
-            val = Tree(data_in).execute('$.' + value)
+            # val = Tree(data_in).execute('$.' + value)
+            val = get_value(data_in, value)
             if val is not None:
                 if isinstance(val, key_type_map[key_type][0]):
                     fields[key] = val
