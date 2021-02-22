@@ -23,6 +23,30 @@ from confluent_kafka import KafkaError
 DEBUG = os.getenv('DEBUG', "false")
 
 
+bool_true = {"True", "true", "1", 1}
+bool_false = {"False", "false", "0", 0}
+
+
+def to_bool(value):
+    if value in bool_true:
+        return True
+    if value in bool_false:
+        return False
+
+
+def to_json_str(value):
+    return json.dumps(value, separators=(',', ':'))
+
+
+key_type_map = {
+    "string": (str, str),
+    "float": (float, float),
+    "int": (int, int),
+    "bool": (bool, to_bool),
+    "string_json": (str, to_json_str)
+}
+
+
 def get_field_values(field_config, data_in):
     fields = {}
     for (key, value) in field_config.items():
@@ -31,28 +55,14 @@ def get_field_values(field_config, data_in):
             key = key_conf[0]
             key_type = key_conf[1]
             val = Tree(data_in).execute('$.' + value)
-            if type(val) == key_type:
-                fields[key] = val
-            else:
-                if key_type == "string":
-                    fields[key] = str(val)
-                elif key_type == "float":
-                    fields[key] = float(val)
-                elif key_type == "int":
-                    fields[key] = int(val)
-                elif key_type == "bool":
-                    fields[key] = bool(val)
+            if val is not None:
+                if isinstance(val, key_type_map[key_type][0]):
+                    fields[key] = val
+                else:
+                    fields[key] = key_type_map[key_type][1](val)
         except Exception as e:
             print('Could not parse value for key ' + key)
             print(e)
-            if key_type == "string":
-                fields[key] = ''
-            elif key_type == "float":
-                fields[key] = 0.0
-            elif key_type == "int":
-                fields[key] = 0
-            elif key_type == "bool":
-                fields[key] = False
     return fields
 
 
