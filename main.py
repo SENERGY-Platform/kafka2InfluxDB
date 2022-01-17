@@ -62,7 +62,9 @@ try:
                                    INFLUX_PORT,
                                    INFLUX_USER,
                                    INFLUX_PW,
-                                   INFLUX_DB)
+                                   INFLUX_DB,
+                                   retries=3,
+                                   timeout=10)
 except Exception as e:
     print("Could not connect to Influx DB")
     sys.exit(1)
@@ -85,7 +87,7 @@ consumer = Consumer({
     'default.topic.config': {
         'auto.offset.reset': os.getenv('OFFSET_RESET', 'smallest')
     },
-    #'session.timeout.ms': 6000,
+    'session.timeout.ms': 45000,
     'max.poll.interval.ms': 600000
     })
 
