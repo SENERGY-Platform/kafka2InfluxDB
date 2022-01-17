@@ -15,6 +15,7 @@
 import json
 import os
 import sys
+from os.path import join, dirname
 
 from confluent_kafka import Consumer
 from influxdb import InfluxDBClient
@@ -23,9 +24,11 @@ from lib import Kafka2Influx
 
 if os.path.isfile('./.env'):
     from dotenv import load_dotenv
-
-    dotenv_path = os.path.join(os.path.dirname(__file__), '.env')
+    print("loading .env", flush=True)
+    dotenv_path = join(dirname(__file__), '.env')
     load_dotenv(dotenv_path)
+
+DEBUG = eval(os.getenv('DEBUG', "False"))
 
 INFLUX_HOST = os.getenv('INFLUX_HOST', "localhost")
 INFLUX_PORT = os.getenv('INFLUX_PORT', 8086)
@@ -82,9 +85,11 @@ consumer = Consumer({
     'default.topic.config': {
         'auto.offset.reset': os.getenv('OFFSET_RESET', 'smallest')
     },
+    #'session.timeout.ms': 6000,
     'max.poll.interval.ms': 600000
     })
 
 kafka_2_influx = Kafka2Influx(consumer, KAFKA_TOPIC, influx_client, DATA_FILTER_ID_MAPPING, DATA_FILTER_ID,
-                                  DATA_MEASUREMENT, DATA_TIME_MAPPING, field_config, TIME_PRECISION, tag_config)
+                                  DATA_MEASUREMENT, DATA_TIME_MAPPING, field_config, TIME_PRECISION, tag_config,
+                              debug=DEBUG)
 kafka_2_influx.start()

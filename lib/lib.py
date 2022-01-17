@@ -20,9 +20,6 @@ import json
 from influxdb import exceptions
 from confluent_kafka import KafkaError
 
-DEBUG = os.getenv('DEBUG', "false")
-
-
 # quick fix for objectpath module recognizing "-" as operator in field names
 def get_value(data, path):
     path = path.split(".")
@@ -88,7 +85,8 @@ class Kafka2Influx:
                  data_time_mapping,
                  field_config,
                  time_precision=None,
-                 tag_config={}):
+                 tag_config={},
+                 debug=False):
         self.consumer = consumer
         self.topic = topic
         self.try_time = True
@@ -100,6 +98,7 @@ class Kafka2Influx:
         self.time_precision = time_precision
         self.influx_client = influx_client
         self.tag_config = tag_config
+        self.debug = debug
 
     def start(self):
         print("starting export", flush=True)
@@ -130,7 +129,7 @@ class Kafka2Influx:
                     raise KafkaException(msg.error())
                 return False
 
-            if DEBUG == "true":
+            if self.debug:
                 print('Received message: %s' % msg.value().decode('utf-8'), flush=True)
             data_input = json.loads(msg.value().decode('utf-8'))
             if self.filter_msg(data_input):
@@ -147,7 +146,7 @@ class Kafka2Influx:
                         self.try_time = False
                 if len(self.tag_config) > 0:
                     body["tags"] = get_field_values(self.tag_config, data_input)
-                if DEBUG == "true":
+                if self.debug:
                     print('Write message: %s' % body, flush=True)
                 points.append(body)
         try:
