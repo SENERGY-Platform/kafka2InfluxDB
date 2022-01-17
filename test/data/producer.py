@@ -11,7 +11,9 @@
 #  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
+
 import json
+import datetime as dt
 
 from confluent_kafka import Producer
 
@@ -30,9 +32,14 @@ def acked(err, msg):
         print("Message produced: %s" % (str(msg)))
 
 
+with open('test.json') as json_file:
+    data = json.load(json_file)
+
 for n in range(10):
         record_key = "test"
-        record_value = json.dumps({'count': n})
+        time = dt.datetime.utcnow() + dt.timedelta(seconds=n)
+        data["time"] = time.strftime("%Y%m%dT%H%M%S.%fZ")
+        record_value = json.dumps(data)
         print("Producing record: {}\t{}".format(record_key, record_value))
         producer.produce(topic, key=record_key, value=record_value, on_delivery=acked)
         producer.poll(0)
