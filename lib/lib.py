@@ -114,7 +114,7 @@ class Kafka2Influx:
                     running = self.process_msgs(msgs)
         except Exception as e:
             print(e)
-            sys.exit()
+            sys.exit(1)
         finally:
             self.consumer.close()
 
