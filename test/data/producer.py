@@ -37,7 +37,7 @@ with open('test.json') as json_file:
 
 for n in range(10):
         record_key = "test"
-        time = dt.datetime.utcnow() + dt.timedelta(seconds=n)
+        time = dt.datetime.utcnow() - dt.timedelta(seconds=n)
         data["time"] = time.strftime("%Y%m%dT%H%M%S.%fZ")
         record_value = json.dumps(data)
         print("Producing record: {}\t{}".format(record_key, record_value))
